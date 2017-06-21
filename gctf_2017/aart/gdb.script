@@ -1,0 +1,22 @@
+file ./aart_client
+br *0x43c949
+br *0x43EF07
+
+r localhost
+patch 0x6f22e8 "pzvmmbyevhmeyblwiclplbahzdlmnyue"
+c
+printf "%s",*($rsi)
+k
+
+r localhost
+patch 0x6f22e8 "roqohaotpshxaijxlaqyrgnidgkbxiwo"
+c
+printf "%s",*($rsi)
+k
+
+#r localhost
+#patch 0x6f22e8 "hveetmiywttiqczjvlwvpommjpehfqjm"
+#c
+#printf "%s",*($rsi)
+#
+#

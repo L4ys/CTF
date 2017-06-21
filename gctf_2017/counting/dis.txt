@@ -1,0 +1,256 @@
+# main {
+    # R1 += R0 (INPUT), R0 = 0
+    0000: IF REG[00], JMP 0001, --REG[00] ELSE JMP 0002
+    0001: REG[01]++ JMP 0000
+    # R2 = 11
+    0002: REG[02]++ JMP 0003
+    0003: REG[02]++ JMP 0004
+    0004: REG[02]++ JMP 0005
+    0005: REG[02]++ JMP 0006
+    0006: REG[02]++ JMP 0007
+    0007: REG[02]++ JMP 0008
+    0008: REG[02]++ JMP 0009
+    0009: REG[02]++ JMP 000A
+    000A: REG[02]++ JMP 000B
+    000B: REG[02]++ JMP 000C
+    000C: REG[02]++ JMP 000D
+    # if ( R1 < R2 ) return
+    000D: CALL 006C, RET TO 000E
+    000E: IF REG[00], JMP 0077, --REG[00] ELSE JMP 000F
+    # R0 = sub_0014()
+    000F: CALL 0014, RET TO 0010, GET 1
+    # R2 = 0
+    0010: IF REG[02], JMP 0010, --REG[02] ELSE JMP 0011
+    # R2 += R0, R0 = 0
+    0011: IF REG[00], JMP 0012, --REG[00] ELSE JMP 0013
+    0012: REG[02]++ JMP 0011
+    
+    # return sub_0040()
+    0013: CALL 0040, RET TO 0077
+# }
+
+# sub_0014 {
+    # R2 = 0
+    0014: IF REG[02], JMP 0014, --REG[02] ELSE JMP 0015
+
+    # do {
+        # R0 = sub_001D()
+        0015: CALL 001D, RET TO 0016, GET 1
+        # R2 += R0
+        0016: IF REG[00], JMP 0017, --REG[00] ELSE JMP 0018
+        0017: REG[02]++ JMP 0016
+
+        0018: IF REG[01], JMP 0019, --REG[01] ELSE JMP 001A
+        0019: IF REG[25], JMP 0000, --REG[25] ELSE JMP 0015
+    # } while ( R1-- )
+ 
+    # R0 = 0
+    001A: IF REG[00], JMP 001A, --REG[00] ELSE JMP 001B
+    # R0 += R2, R2 = 0
+    001B: IF REG[02], JMP 001C, --REG[02] ELSE JMP 0077
+    001C: REG[00]++ JMP 001B
+# }
+
+# sub_001D {
+    # R2 = 0
+    001D: IF REG[02], JMP 001D, --REG[02] ELSE JMP 001E
+    # while ( true ) {
+        # R0 = R1
+        001E: CALL 0054, RET TO 001F
+        # R3 = 0
+        001F: IF REG[03], JMP 001F, --REG[03] ELSE JMP 0020
+        # R3 += R0
+        0020: IF REG[00], JMP 0021, --REG[00] ELSE JMP 0022
+        0021: REG[03]++ JMP 0020
+
+        # if ( R3 < 2 ) break
+        0022: IF REG[03], JMP 0023, --REG[03] ELSE JMP 002A
+        0023: IF REG[03], JMP 0024, --REG[03] ELSE JMP 002A
+
+        # R0 = sub_002D()
+        0024: CALL 002D, RET TO 0025, GET1
+        # R2++
+        0025: REG[02]++ JMP 0026
+        # R1 = 0
+        0026: IF REG[01], JMP 0026, --REG[01] ELSE JMP 0027
+        # R1 += R0, R0 = 0
+        0027: IF REG[00], JMP 0028, --REG[00] ELSE JMP 0029
+        0028: REG[01]++ JMP 0027
+
+        0029: IF REG[25], JMP 0000, --REG[25] ELSE JMP 001E
+    # }
+
+    # R0 = 0
+    002A: IF REG[00], JMP 002A, --REG[00] ELSE JMP 002B
+    # R0 += R2, R2 = 0
+    002B: IF REG[02], JMP 002C, --REG[02] ELSE JMP 0077
+    002C: REG[00]++ JMP 002B
+# }
+
+# sub_002D {
+    # R2 = 0
+    002D: IF REG[02], JMP 002D, --REG[02] ELSE JMP 002E
+    # R0 = R1
+    002E: CALL 0054, RET TO 002F
+    # R2 = R0, R0 = 0
+    002F: IF REG[00], JMP 0030, --REG[00] ELSE JMP 0031 0030: REG[02]++ JMP 002F
+    # R0, R1 = sub_005C()
+    0031: CALL 005C, RET TO 0032, GET 2
+    # if ( !R1-- ) return
+    0032: IF REG[01], JMP 0033, --REG[01] ELSE JMP 0077
+    # R0 = 0
+    0033: IF REG[00], JMP 0033, --REG[00] ELSE JMP 0034
+    # R1 = 0
+    0034: IF REG[01], JMP 0034, --REG[01] ELSE JMP 0035
+    # R1 += R2, R2 = 0
+    0035: IF REG[02], JMP 0036, --REG[02] ELSE JMP 0037
+    0036: REG[01]++ JMP 0035
+    # R0 = R1
+    0037: CALL 0054, RET TO 0038, GET 1
+    # R2 += R0, R0 = 0
+    0038: IF REG[00], JMP 0039, --REG[00] ELSE JMP 003A
+    0039: REG[02]++ JMP 0038
+    # R0 = R1
+    003A: CALL 0054, RET TO 003B, GET 1
+    # R0 += R1, R1 = 0
+    003B: IF REG[01], JMP 003C, --REG[01] ELSE JMP 003D
+    003C: REG[00]++ JMP 003B
+    # R0 += R2, R2 = 0
+    003D: IF REG[02], JMP 003E, --REG[02] ELSE JMP 003F
+    003E: REG[00]++ JMP 003D
+    # R0++
+    003F: REG[00]++ JMP 0077
+# }
+
+# sub_0040() {
+    # R0 = R1
+    0040: CALL 0054, RET TO 0041
+    # R3 = 0
+    0041: IF REG[03], JMP 0041, --REG[03] ELSE JMP 0042
+    # R3 += R0, R0 = 0
+    0042: IF REG[00], JMP 0043, --REG[00] ELSE JMP 0044
+    0043: REG[03]++ JMP 0042
+    # if ( !R3 ) return else R3--
+    0044: IF REG[03], JMP 0045, --REG[03] ELSE JMP 0077
+    # R0 ++
+    0045: REG[00]++ JMP 0046
+    # if ( !R3 ) return else R3--
+    0046: IF REG[03], JMP 0047, --REG[03] ELSE JMP 0077
+    # if ( !R1 ) return else R1--
+    0047: IF REG[01], JMP 0048, --REG[01] ELSE JMP 0077
+    # R0 = sub_0040()
+    0048: CALL 0040, RET TO 0049, GET 1
+    # R4 = 0
+    0049: IF REG[04], JMP 0049, --REG[04] ELSE JMP 004A
+    # R4 += R0, R0 = 0
+    004A: IF REG[00], JMP 004B, --REG[00] ELSE JMP 004C
+    004B: REG[04]++ JMP 004A
+    # if ( !R1 ) return else R1--
+    004C: IF REG[01], JMP 004D, --REG[01] ELSE JMP 0077
+    # R0 = sub_0040()
+    004D: CALL 0040, RET TO 004E
+    # R4 += R0, R0 = 0
+    004E: IF REG[00], JMP 004F, --REG[00] ELSE JMP 0050
+    004F: REG[04]++ JMP 004E
+    # R1 = 0
+    0050: IF REG[01], JMP 0050, --REG[01] ELSE JMP 0051
+    # R1 += R4
+    0051: IF REG[04], JMP 0052, --REG[04] ELSE JMP 0053
+    0052: REG[01]++ JMP 0051
+    # R0 = sub_0063()
+    0053: CALL 0063, RET TO 0077
+}
+# sub_0054 {
+    # R0 = 0
+    0054: IF REG[00], JMP 0054, --REG[00] ELSE JMP 0055
+    # R0 += R1, R1 = 0
+    0055: IF REG[01], JMP 0056, --REG[01] ELSE JMP 0077
+    0056: REG[00]++ JMP 0055
+# }
+
+# sub_0057 {
+    # R0 = 0
+    0057: IF REG[00], JMP 0057, --REG[00] ELSE JMP 0058
+    # R0 += R1, R1 = 0
+    0058: IF REG[01], JMP 0059, --REG[01] ELSE JMP 005A
+    0059: REG[00]++ JMP 0058
+    # R0 += R2, R2 = 0
+    005A: IF REG[02], JMP 005B, --REG[02] ELSE JMP 0077
+    005B: REG[00]++ JMP 005A
+}
+
+# sub_005C {
+    # R0 = 0
+    005C: IF REG[00], JMP 005C, --REG[00] ELSE JMP 005D
+    # R1 = 0
+    005D: IF REG[01], JMP 005D, --REG[01] ELSE JMP 005E
+    
+    # while ( true ) {
+        # if ( !R2-- ) return
+        005E: IF REG[02], JMP 005F, --REG[02] ELSE JMP 0077
+        # if ( !R2-- ) break
+        005F: IF REG[02], JMP 0060, --REG[02] ELSE JMP 0062
+
+        # R0 ++
+        0060: REG[00]++ JMP 0061
+        0061: IF REG[25], JMP 0000, --REG[25] ELSE JMP 005E
+    # }
+
+    # R1++
+    0062: REG[01]++ JMP 0077
+}
+
+# sub_0063 {
+    # while ( true ) {
+        # R0 = sub_006C()
+        0063: CALL 006C, RET TO 0064
+        # if ( R1 < R2 ) {
+            0064: IF REG[00], JMP 0065, --REG[00] ELSE JMP 0067
+            # R0 += R1, return 
+            0065: IF REG[01], JMP 0066, --REG[01] ELSE JMP 0077
+            0066: REG[00]++ JMP 0065
+        # }
+
+        # R0 = sub_0071()
+        0067: CALL 0071, RET TO 0068
+        # if ( R1 > R2 )  {
+            # R1 = 0
+            0068: IF REG[01], JMP 0068, --REG[01] ELSE JMP 0069
+            # R1 += R0, R0 = 0
+            0069: IF REG[00], JMP 006A, --REG[00] ELSE JMP 006B
+            006A: REG[01]++ JMP 0069
+            006B: IF REG[25], JMP 0000, --REG[25] ELSE JMP 0063
+        # }
+    # }
+# }
+
+# sub_006C {
+    # while ( true ) {
+        # R0 = 0
+        006C: IF REG[00], JMP 006C, --REG[00] ELSE JMP 006D
+        # if ( !R2-- ) return 
+        006D: IF REG[02], JMP 006E, --REG[02] ELSE JMP 0077
+        # if ( !R1-- ) break
+        006E: IF REG[01], JMP 006F, --REG[01] ELSE JMP 0070
+        006F: IF REG[25], JMP 0000, --REG[25] ELSE JMP 006C
+    # }
+ 
+    # R0++
+    0070: REG[00]++ JMP 0077
+# }
+
+# sub_0071 {
+    #  while ( true ) {
+        # if ( !R2-- ) break
+        0071: IF REG[02], JMP 0072, --REG[02] ELSE JMP 0074
+        # if ( !R1-- ) return
+        0072: IF REG[01], JMP 0073, --REG[01] ELSE JMP 0077
+        0073: IF REG[25], JMP 0000, --REG[25] ELSE JMP 0071
+    # }
+
+    # R0 = 0
+    0074: IF REG[00], JMP 0074, --REG[00] ELSE JMP 0075
+    # R0 += R1, R1 = 0
+    0075: IF REG[01], JMP 0076, --REG[01] ELSE JMP 0077
+    0076: REG[00]++ JMP 0075
+# }
