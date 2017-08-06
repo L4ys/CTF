@@ -1,0 +1,7 @@
+from Crypto.Cipher import AES
+import base64
+import sys
+obj = AES.new('n0t_just_t00ling', AES.MODE_CBC, '7215f7c61c2edd24')
+ciphertext = "7fd54c97a5f5e64108ffd5d97a8857b0c5d5349d44a31f0db6be9f603936002f3cdadc2b23a43153d885797ac71b4d2feaad5be05e9fb0c36481a4f18aa4a4da470c1ce31a65f84b40c281a4efae79413261731283a8836360f4939561869434aad17dfb7f28e06552df4927061d713b868be8c6ccab02a4c928a4e65ba3889f3a4aade4b8d2c0d762512cbe".decode('hex')
+message = obj.decrypt(base64.b64decode(ciphertext))
+print message
