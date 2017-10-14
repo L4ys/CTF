@@ -6,6 +6,7 @@ import os
 import sys
 sys.path.append("./bin/")
 
+
 MODE_SERVER = 0
 MODE_CLIENT = 1
 DUMP_FILE = True
@@ -77,7 +78,19 @@ def RC4(data, key):
         res += chr(ord(d) ^ S[(S[i] + S[j]) % 256])
     return res
 
-def decompress(header, body, compressor_id):
+def decompress(body):
+    # DWORD header_size;
+    # DWORD body_size;
+    # DWORD decompressed_size;
+    # BYTE compressor_id[16];
+    header_size = u32(body[0:4])
+    body_size   = u32(body[4:8])
+    plain_size  = u32(body[8:12])
+    compressor_id = body[12:28].encode('hex')
+
+    header = body[:header_size]
+    body   = body[header_size:header_size+body_size]
+
     if compressor_id == "f37126ad88a5617eaf06000d424c5a21":   # default
         return body
     elif compressor_id == "5fd8ea0e9d0a92cbe425109690ce7da2": # zlib
@@ -87,20 +100,29 @@ def decompress(header, body, compressor_id):
         import aplib
         return aplib.depack_safe(body)
     elif compressor_id == "0a7874d2478a7713705e13dd9b31a6b1": # lzo1x
-        with context.local(log_level='ERROR'):
-            try:
-                p = process(["./bin/lzo", str(len(body))])
-                p.send(body)
-                plain = p.readline()[:-1].decode('hex')
-                p.close()
-            except:
-                # FIXME: lzo seg fault ?_?
-                return
-            return plain
+	plain_size = u32(header[8:12])
+	import lzo
+	return lzo.decompress(body, False, plain_size) 
     else:
         log.warning("Unknown Compressor: %s" % compressor_id)
 
-def decrypt(header, body, cryptor_id):
+def decrypt(packet):
+    # DWORD year;
+    # DWORD checksum;
+    # DWORD header_size;
+    # DWORD body_size;
+    # DWORD decrypted_size;
+    # BYTE cryptor_id[16];
+    year        = packet[0:4] 
+    checksum    = u32(packet[4:8])
+    header_size = u32(packet[8:12])
+    body_size   = u32(packet[12:16])
+    plain_size  = u32(packet[16:20])
+    cryptor_id  = packet[20:36].encode('hex')
+
+    header = packet[:header_size]
+    body   = packet[header_size:header_size+body_size]
+
     if cryptor_id == "51298f741667d7ed2941950106f50545":   # default
         return body
 
@@ -170,10 +192,24 @@ def decrypt(header, body, cryptor_id):
         log.warning("Unknown Cryptor: %s" % cryptor_id)
         
 
-def handle_cmd(header, buf, processor_id):
+def handle_cmd(data):
     global file_name
     global file_data
-    cmd = u32(header[4:8])
+
+    # DWORD version;
+    # DWORD cmd;
+    # DWORD seq;
+    # DWORD error_code;
+    # DWORD last_error; 
+    # char processer_id[16];
+    cmd     = u32(data[4:8])
+    seq     = u32(data[8:12])
+    error   = u32(data[12:16])
+    last_error = u32(data[16:20])
+    processor_id = data[20:36].encode('hex')
+
+    header = data[:36]
+    buf    = data[36:]
 
     if processor_id == "155bbf4a1efe1517734604b9d42b80e8":
         default_process(header, cmd, buf, mode)
@@ -386,72 +422,27 @@ def default_process(header, cmd, buf, mode):
         log.warning("Default | %d" % cmd)
 
 def decode(packet):
-    # header
-    # DWORD year;
-    # DWORD checksum;
-    # DWORD header_size;
-    # DWORD body_size;
-    # DWORD decrypted_size;
-    # BYTE cryptor_id[16];
-    header = packet[:36]
-    year   = header[0:4]
-
-    if year != '2017':
-        log.warning("Invalid packet header: %s" % year)
+    if packet[0:4] != "2017":
+        log.warning("Invalid packet header:")
         print hexdump(packet)
         return
 
-    checksum    = u32(header[4:8])
-    header_size = u32(header[8:12])
-    body_size   = u32(header[12:16])
-    plain_size  = u32(header[16:20])
-    cryptor_id  = header[20:36].encode('hex')
-    header = packet[:header_size]
-    body   = packet[header_size:]
-    body = decrypt(header, body, cryptor_id)
+    body = decrypt(packet)
     if not body:
         log.warning("Decrypt Failed")
         return
 
-    # DWORD header_size;
-    # DWORD body_size;
-    # DWORD decompressed_size;
-    # BYTE compressor_id[16];
-    header_size = u32(body[0:4])
-    body_size   = u32(body[4:8])
-    plain_size  = u32(body[8:12])
-    compressor_id = body[12:28].encode('hex')
-
-    header = body[:header_size]
-    body   = body[header_size:]
-    data = decompress(header, body, compressor_id)
-
+    data = decompress(body)
     if not data:
         log.warning("Decompress Failed")
-        print hexdump(body)
         return
         
-    # DWORD version;
-    # DWORD cmd;
-    # DWORD seq;
-    # DWORD error_code;
-    # DWORD last_error; 
-    # char processer_id[16];
-    version = u32(data[0:4])
-    if version != 0x20170417:
-        log.warning("Invalid command header: %08x" % version)
+    if u32(data[0:4]) != 0x20170417:
+        log.warning("Invalid command header:")
         print hexdump(data)
         return
 
-    cmd     = u32(data[4:8])
-    seq     = u32(data[8:12])
-    error   = u32(data[12:16])
-    last_error = u32(data[16:20])
-    processer_id = data[20:36].encode('hex')
-
-    header = data[:36]
-    body   = data[36:]
-    handle_cmd(header, body, processer_id)
+    handle_cmd(data)
 
 if len(sys.argv) != 2:
     print "Usage %s [client*.bin|server*.bin]" % sys.argv[0]
@@ -474,25 +465,21 @@ with open(packet, "rb") as f:
             log.warning("No more packet?")
             break
 
-        year        = u32(header[0:4])
-        checksum    = u32(header[4:8])
+	# DWORD year;
+	# DWORD checksum;
+	# DWORD header_size;
+	# DWORD body_size;
+	# DWORD decrypted_size;
+	# BYTE cryptor_id[16];
         header_size = u32(header[8:12])
         body_size   = u32(header[12:16])
-        plain_size  = u32(header[16:20])
-        if header_size > 36:
-            header += f.read(header_size - 36)
+	header += f.read(header_size - 36)
         packet = header + f.read(body_size)
 
-        b = f.read(4)
-        if not b:
-            break
-
+        b = ""
         while b != "2017":
             b = f.read(4)
             if not b:
                 exit()
         pre = b
-
         decode(packet)
-
-
