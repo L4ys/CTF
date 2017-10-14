@@ -352,7 +352,7 @@ def default_process(header, cmd, buf, mode):
             plugin_data = ""
     elif cmd == 6:
         if mode == MODE_CLIENT:
-            log.info("InstallPlugin")
+            log.info("Default | DownloadPlugin")
         else:
             plugin_id = buf[:16].encode('hex')
             plugin_type = buf[16:20]
@@ -391,7 +391,7 @@ def decode(packet):
     # DWORD checksum;
     # DWORD header_size;
     # DWORD body_size;
-    # DWORD decompressed_size;
+    # DWORD decrypted_size;
     # BYTE cryptor_id[16];
     header = packet[:36]
     year   = header[0:4]
@@ -415,7 +415,7 @@ def decode(packet):
 
     # DWORD header_size;
     # DWORD body_size;
-    # DWORD decrypted_size;
+    # DWORD decompressed_size;
     # BYTE compressor_id[16];
     header_size = u32(body[0:4])
     body_size   = u32(body[4:8])
