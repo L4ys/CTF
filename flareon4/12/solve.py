@@ -12,6 +12,7 @@ DUMP_FILE = True
 
 # for dump files
 send_data = ""
+recv_data = ""
 plugin_data = ""
 file_name = ""
 file_data = ""
@@ -275,6 +276,7 @@ def handle_cmd(header, buf, processor_id):
 
     elif processor_id == "77d6ce92347337aeb14510807ee9d7be": # Socket
         global send_data
+        global recv_data 
         if cmd == 1:
             if mode == MODE_CLIENT:
                 log.info("Connect | ")
@@ -282,16 +284,26 @@ def handle_cmd(header, buf, processor_id):
                 host = buf[4:].rstrip("\x00")
                 port = u32(buf[0:4])
                 log.info("Connect | host: %s | port %d" % (host,port))
-                send_data = ""
+
+            send_data = ""
+            recv_data = ""
         elif cmd == 2:
+            # server closed the connection
             log.info("Connect | Close")
             if send_data:
-                log.success("Dump send data to send.bin...")
-                dump("send.bin", send_data)
-
+                log.success("Dump send data to server2.bin...")
+                dump("server2.bin", send_data)
         elif cmd == 3:
-            log.info("Connect | Send: %d bytes" % len(buf))
-            send_data += buf
+            if mode == MODE_SERVER:
+                log.info("Connect | Send: %d bytes" % len(buf))
+                send_data += buf
+            else:
+                log.info("Connect | Recv: %d bytes" % len(buf))
+                recv_data += buf
+                if len(buf) == 0 and recv_data:
+                    log.success("Dump recv data to client2.bin...")
+                    dump("client2.bin", recv_data)
+
         elif cmd == 4:
             log.info("Connect | Recv")
         else:

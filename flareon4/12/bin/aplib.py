@@ -18,7 +18,7 @@ if os.name == 'nt':
 else:
     CB_COMPRESS = CFUNCTYPE(c_uint, c_uint, c_uint, c_uint, c_void_p)
     # might require LD_LIBRARY_PATH set
-    _aplib = CDLL("./libaplib.so")    
+    _aplib = CDLL((os.path.dirname(os.path.realpath(__file__))) + "/libaplib.so")    
 
 def _ratio(inpos, insize):
     return (inpos * 100) / insize
