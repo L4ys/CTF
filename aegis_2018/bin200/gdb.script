@@ -1,0 +1,12 @@
+file ./elf
+
+br* 0x400B05
+commands
+    dump memory dump 0x602210 0x60222a
+    dump memory dump2 0x401050 0x4010FE
+    q
+end
+
+r
+
+
